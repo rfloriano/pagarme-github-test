@@ -1,0 +1,41 @@
+{
+  "name": "pagarme-github-test",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "coffee -co js . && cp -R tests/data js/tests/data && istanbul cover node_modules/mocha/bin/_mocha -- -t 10000 --recursive js/tests -R spec -r should && cp README.md package.json js/",
+    "start": "nodemon index.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://rfloriano@bitbucket.org/rfloriano/pagarme-github-test.git"
+  },
+  "keywords": [],
+  "author": "Rafael Floriano da Silva",
+  "license": "MIT",
+  "dependencies": {
+    "async": "~0.2.9",
+    "express": "~3.3.8",
+    "express-resource": "~1.0.0",
+    "github": "^0.2.4",
+    "jade": "~0.35.0",
+    "mongoose": "^4.2.9",
+    "node-restful": "^0.2.4",
+    "passport": "~0.1.17",
+    "passport-github2": "^0.1.9",
+    "winston": "~0.7.2"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-contrib-cssmin": "~0.6.1",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-watch": "~0.4.4",
+    "grunt-curl": "~1.1.1",
+    "grunt-shell": "^1.1.2",
+    "mocha": "~1.12.1",
+    "should": "~1.2.2",
+    "sinon": "~1.7.3"
+  }
+}
