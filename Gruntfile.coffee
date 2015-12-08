@@ -37,7 +37,7 @@ module.exports = (grunt) ->
                 "http://cdnjs.cloudflare.com/ajax/libs/backbone.validation/0.8.2/backbone-validation.js"
                 "http://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/1.0.1-bundled/backbone.marionette.js"
 
-                "http://fgnass.github.io/spin.js/dist/spin.js"
+                "http://fgnass.github.io/spin.js/spin.js"
 
                 "http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.js"
 
@@ -65,7 +65,7 @@ module.exports = (grunt) ->
 
         shell:
             "coffee-server":
-                command: "coffee index.coffee"
+                command: "./node_modules/.bin/coffee index.coffee"
 
         cssmin:
             styles:
@@ -93,7 +93,7 @@ module.exports = (grunt) ->
         grunt.file.copy "public/landing.css", "build/landing.css"
 
     grunt.registerTask "install", ["curl-dir"]
-    grunt.registerTask "build", ["cssmin", "copy", "coffee", "requirejs"]
+    grunt.registerTask "build", ["install", "cssmin", "copy", "coffee", "requirejs"]
     grunt.registerTask "start", "watch"
     grunt.registerTask "run", ["shell:coffee-server"]
     grunt.registerTask "test", "mochaTest"
