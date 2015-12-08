@@ -1,5 +1,8 @@
 .PHONY: test run
 
+setup:
+	@npm install .
+
 run:
 	@grunt run
 
