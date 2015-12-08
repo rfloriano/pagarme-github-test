@@ -1,82 +1,168 @@
 User = require '../../modules/models/User'
 should = require 'should'
+request = require 'supertest'
+app = require '../index'
 
 describe "User", ->
 
     beforeEach (done) ->
-        User.removeAll done
+        User.removeAll(done)
 
-    describe "#getOrCreateByGoogleId()", ->
+    describe "#getOrCreateByGithub()", ->
 
         it "should create user if there is no such one", (done) ->
 
             params =
-                googleId: "gooid"
-                email: "user@gmail.com"
+                id: "github"
+                emails: [
+                    value: "user@gmail.com"
+                ]
+                username: "user"
 
-            User.getOrCreateByGoogleId params, (error, user) ->
+            User.getOrCreateByGithub(params, "1234", (error, user) ->
+                should.not.exist(error)
 
-                should.not.exist error
-
-                user.googleId.should.eql "gooid"
-                user.email.should.eql "user@gmail.com"
+                user.value.githubId.should.eql("github")
+                user.value.email.should.eql("user@gmail.com")
+                user.value.username.should.eql("user")
+                user.value.accessToken.should.eql("1234")
 
                 User.count (error, count) ->
-                    count.should.eql 1
+                    count.should.eql(1)
                     done()
+            )
 
         it "should return user if there is one", (done) ->
 
             params =
-                googleId: "gooid2"
-                email: "user2@gmail.com"
+                githubId: "github2"
+                id: "github2"
+                emails: [
+                    value: "user2@gmail.com"
+                ]
+                username: "user2"
+                accessToken: "12345"
 
             (new User params).save (error) ->
 
-                User.getOrCreateByGoogleId params, (error, user) ->
-                    user.email.should.eql "user2@gmail.com"
+                User.getOrCreateByGithub(params, "12345", (error, user) ->
+                    user.value.githubId.should.eql("github2")
+                    user.value.email.should.eql("user2@gmail.com")
+                    user.value.username.should.eql("user2")
+                    user.value.accessToken.should.eql("12345")
 
                     User.count (error, count) ->
-                        count.should.eql 1
+                        count.should.eql(1)
                         done()
+                )
 
-    describe "#touch()", ->
+    describe "RestApi", ->
+        it "should get empty users list", (done) ->
+            request(app)
+                .get('/api/users/')
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect([], done)
 
-        it "should update last visit time as well as collection of user IPs", (done) ->
-
+        it "should get users list", (done) ->
             params =
-                googleId: "id"
-                email: "id@gmail.com"
+                githubId: "github"
+                email: "user@gmail.com"
+                username: "user"
+                accessToken: "12345"
 
-            User.getOrCreateByGoogleId params, (error, user) ->
-                User.touch user._id, "127.0.0.1", (error) ->
-                    User.findOne {_id: user._id}, (error, user) ->
+            user = new User(params)
+            user.save()
 
-                        should.not.exist error
+            request(app)
+                .get('/api/users/')
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect((res) ->
+                    res.body.should.length(1)
+                    res.body[0]._id.should.match(/[\d\w]+/);
+                    res.body[0].githubId.should.eql("github")
+                    res.body[0].email.should.eql("user@gmail.com")
+                    res.body[0].username.should.eql("user")
+                    res.body[0].accessToken.should.eql("12345")
+                ).end(done)
 
-                        user.lastSeenAt.should.eql new Date()
-
-                        user.ips.should.have.lengthOf 1
-                        user.ips[0].should.eql "127.0.0.1"
-
-                        done()
-
-        it "should not duplicate existing IPs", (done) ->
-
+        it "should get user id", (done) ->
             params =
-                googleId: "id"
-                email: "id@gmail.com"
+                githubId: "github"
+                email: "user@gmail.com"
+                username: "user"
+                accessToken: "12345"
 
-            User.getOrCreateByGoogleId params, (error, user) ->
-                User.touch user._id, "127.0.0.1", (error) ->
-                    User.touch user._id, "192.168.0.1", (error) ->
-                        User.touch user._id, "127.0.0.1", (error) ->
-                            User.findOne {_id: user._id}, (error, user) ->
+            user = new User(params)
+            user.save()
 
-                                should.not.exist error
+            request(app)
+                .get('/api/users/' + user.id)
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .expect((res) ->
+                    res.body._id.should.match(/[\d\w]+/);
+                    res.body.githubId.should.eql("github")
+                    res.body.email.should.eql("user@gmail.com")
+                    res.body.username.should.eql("user")
+                    res.body.accessToken.should.eql("12345")
+                ).end(done)
 
-                                user.ips.should.have.lengthOf 2
-                                user.ips.should.include "127.0.0.1"
-                                user.ips.should.include "192.168.0.1"
+        it "should post a user", (done) ->
+            params =
+                githubId: "github"
+                email: "user@gmail.com"
+                username: "user"
+                accessToken: "12345"
 
-                                done()
+            request(app)
+                .post('/api/users/')
+                .set('Content-Type', 'application/json')
+                .send(params)
+                .expect('Content-Type', /json/)
+                .expect(201)
+                .expect((res) ->
+                    res.body._id.should.match(/[\d\w]+/);
+                    res.body.githubId.should.eql("github")
+                    res.body.email.should.eql("user@gmail.com")
+                    res.body.username.should.eql("user")
+                    res.body.accessToken.should.eql("12345")
+                ).end(done)
+
+        it "should put a user", (done) ->
+            params =
+                githubId: "github"
+                email: "user@gmail.com"
+                username: "user"
+                accessToken: "12345"
+
+            user = new User(params)
+            user.save()
+
+            request(app)
+                .put('/api/users/' + user.id)
+                .set('Content-Type', 'application/json')
+                .send({githubId: "updatedGithubId"})
+                .expect(200)
+                .expect((res) ->
+                    res.body._id.should.match(/[\d\w]+/);
+                    res.body.githubId.should.eql("github")
+                    res.body.email.should.eql("user@gmail.com")
+                    res.body.username.should.eql("user")
+                    res.body.accessToken.should.eql("12345")
+                ).end(done)
+
+        it "should delete a user", (done) ->
+            params =
+                githubId: "github"
+                email: "user@gmail.com"
+                username: "user"
+                accessToken: "12345"
+
+            user = new User(params)
+            user.save()
+
+            request(app)
+                .delete('/api/users/' + user.id)
+                .expect(204, done)
