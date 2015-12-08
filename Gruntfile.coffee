@@ -55,6 +55,14 @@ module.exports = (grunt) ->
                     ext: ".js"
                 ]
 
+        mochaTest:
+            test:
+                options:
+                    reporter: 'spec',
+                    require: 'coffee-script/register'
+                src: ['tests/**/*.coffee']
+
+
         shell:
             "coffee-server":
                 command: "coffee index.coffee"
@@ -79,6 +87,7 @@ module.exports = (grunt) ->
     grunt.loadNpmTasks "grunt-contrib-coffee"
     grunt.loadNpmTasks "grunt-contrib-watch"
     grunt.loadNpmTasks "grunt-shell"
+    grunt.loadNpmTasks "grunt-mocha-test"
 
     grunt.registerTask "copy", "Copies landing.css to public folder.", ->
         grunt.file.copy "public/landing.css", "build/landing.css"
@@ -87,4 +96,5 @@ module.exports = (grunt) ->
     grunt.registerTask "build", ["cssmin", "copy", "coffee", "requirejs"]
     grunt.registerTask "start", "watch"
     grunt.registerTask "run", ["shell:coffee-server"]
+    grunt.registerTask "test", "mochaTest"
     grunt.registerTask "default", ["start"]
