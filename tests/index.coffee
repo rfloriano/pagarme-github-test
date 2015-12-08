@@ -1,5 +1,12 @@
 mongoose = require 'mongoose'
 sinon = require 'sinon'
+Log = require "../modules/Log"
+config = require '../config'
+app = require '../server'
+
+app.listen(config.port, ->
+    Log.info "Listening on #{config.port}..."
+)
 
 clock = null
 
@@ -11,3 +18,5 @@ before ->
 after ->
     mongoose.connection.close()
     clock.restore()
+
+module.exports = app
