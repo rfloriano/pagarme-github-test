@@ -14,4 +14,7 @@ repoSchema.statics.getOrCreateByGithub = (repo, done) ->
         name: repo.name
     @collection.findAndModify(query, sort, update, options, done)
 
+repoSchema.statics.removeAll = (done) ->
+    @collection.remove {}, {w: 0}, done
+
 module.exports = mongoose.model("repos", repoSchema)
